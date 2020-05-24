@@ -6,17 +6,19 @@ import time
 
 signing_key = nacl.signing.SigningKey.generate()
 
+
 def get_author(signing_key):
     key_bytes = bytes(signing_key.verify_key)
     key_base64 = base64.encodebytes(key_bytes).strip().decode()
     return '@' + key_base64 + '.ed25519'
 
+
 def get_signature(signing_key, unsigned_value):
     unsigned_json = json.dumps(unsigned_value, indent=2)
-
     signature_bytes = signing_key.sign(bytes(unsigned_json, 'utf8')).signature
     signature_base64 = base64.encodebytes(signature_bytes).strip().decode()
     return signature_base64 + '.sig.ed25519'
+
 
 value = {}
 value['previous'] = None
