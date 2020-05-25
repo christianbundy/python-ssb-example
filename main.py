@@ -2,9 +2,8 @@ import time
 import sqlite3
 import nacl.signing
 import nacl.encoding
+import nacl.hash
 import json
-import hashlib
-import base64
 import sys
 
 # Older versions of Python don't respect dictionary insertion order.
@@ -25,26 +24,23 @@ conn.commit()
 
 
 def get_author_id(verify_key):
-    key_bytes = bytes(verify_key)
-    key_base64 = base64.encodebytes(key_bytes).strip().decode()
+    key_base64 = verify_key.encode(nacl.encoding.Base64Encoder).decode()
     return '@' + key_base64 + '.ed25519'
 
 
 def get_signature(signing_key, unsigned_value):
     unsigned_json = json.dumps(unsigned_value, indent=2)
     unsigned_json_bytes = bytes(unsigned_json, 'utf8')
-    signature_bytes = signing_key.sign(unsigned_json_bytes).signature
-    signature_base64 = base64.encodebytes(signature_bytes).strip().decode()
+    signature = signing_key.sign(unsigned_json_bytes).signature
+    signature_base64 = nacl.encoding.Base64Encoder.encode(signature).decode()
     return signature_base64 + '.sig.ed25519'
 
 
 def get_message_id(signed_value):
     signed_json = json.dumps(signed_value, indent=2)
     signed_json_bytes = bytes(signed_json, 'utf8')
-    hash_bytes = hashlib.sha256()
-    hash_bytes.update(signed_json_bytes)
-    hash_digest = hash_bytes.digest()
-    hash_base64 = base64.encodebytes(hash_digest).strip().decode()
+    hash_base64 = nacl.hash.sha256(
+        signed_json_bytes, nacl.encoding.Base64Encoder).decode()
     return '%' + hash_base64 + '.sha256'
 
 
