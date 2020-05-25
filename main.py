@@ -1,11 +1,14 @@
+import sys
+
+# Older versions of Python don't respect dictionary insertion order.
+is_recent_python = sys.version_info >= (3, 6)
+assert is_recent_python, "Please upgrade to Python 3.6 or greater"
+
 import base64
 import json
 import nacl.encoding
 import nacl.signing
 import time
-
-signing_key = nacl.signing.SigningKey.generate()
-
 
 def get_author(signing_key):
     key_bytes = bytes(signing_key.verify_key)
@@ -19,6 +22,9 @@ def get_signature(signing_key, unsigned_value):
     signature_base64 = base64.encodebytes(signature_bytes).strip().decode()
     return signature_base64 + '.sig.ed25519'
 
+
+
+signing_key = nacl.signing.SigningKey.generate()
 
 value = {}
 value['previous'] = None
